@@ -5,8 +5,31 @@ pre-registration freeze in step 4 is what makes the result a pilot rather than a
 
 ## 0. Prerequisites
 
-- Docker Desktop or Docker Engine with at least 8 GB RAM and 40 GB disk allotted.
-  Apple Silicon works; the image resolves JDK paths for arm64 at build time.
+**Why Docker.** Docker Desktop is the only infrastructure the pilot needs, and it is not
+optional, for three reasons. First, safety: the agentic arm gives the model an
+unrestricted shell, and inside a container it can only damage a throwaway copy of one
+repository, never your files. Second, validity: the container has no network and an
+offline Maven cache, so the model cannot download newer dependencies or the upstream
+project's own already-migrated commits, which is the first thing a reviewer will ask
+about. Third, setup: the image pins JDK 8, JDK 17 and Maven and warms the dependency
+cache, so you install nothing by hand. Inspect also offers a `local` sandbox mode that
+runs commands directly on the host; it is deliberately not wired in, because the
+agentic arm would then run model-written shell commands as your user with network access.
+
+**Docker Desktop settings** (Settings, Resources), before building:
+
+| Setting | Minimum | Why |
+|---|---|---|
+| Memory | 8 GB | the image build runs every repo's tests on JDK 8; each sandbox gets 6 GB (`docker/compose.yaml`) |
+| Disk | 40 GB | image layers, Maven cache, 16 repositories, logs |
+| CPUs | 4 | each sandbox gets 2 CPUs; `--max-samples` should be CPUs divided by 2 |
+| File sharing | none needed | repositories are baked into the image, nothing is mounted |
+
+Apple Silicon is fine; JDK paths resolve to arm64 at build time. Confirm the daemon is
+up with `docker info` before step 2.
+
+**Everything else:**
+
 - Python 3.11 or newer. `pip install -e ".[dev]"` from the repo root, then `pytest`.
 - API keys as environment variables: `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`,
   `OPENAI_API_KEY`. Set a hard spend cap in each vendor console before anything else;
@@ -90,7 +113,7 @@ inspect eval legacybench/tasks.py@pilot_agentic --model openai/gpt-6-astra      
 ```
 
 `--max-samples` is how many sandboxes run at once; each gets 2 CPUs and 6 GB from
-`docker/compose.yaml`. Lower it on a small machine.
+`docker/compose.yaml`. Set it to your Docker Desktop CPU allowance divided by 2.
 
 Running total at any point:
 

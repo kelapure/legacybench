@@ -298,6 +298,16 @@ Everything below is buildable and unit-testable in this container without API ke
 3. The workflow file validates with `actionlint` if available, otherwise by dry inspection.
 4. Nothing in the repo contains an API key; `prices.yaml` carries its date; the README's first paragraph states the pilot's non-claims.
 
+## 11. Local execution decisions (2026-10-26)
+
+Recorded answers: the pilot runs on the user's machine; the user has Docker Desktop; the code is on `main` (identical to `claude/elegant-cerf-7jo01c`, five commits).
+
+**Docker stays, no local sandbox mode.** Docker is the only infrastructure the pilot needs and it is kept for three reasons that go into the run guide verbatim: (1) safety, the agentic arm gives the model an unrestricted shell, and in a container it can only damage a throwaway copy of one repo; (2) validity, the container has no network and an offline Maven cache, so the model cannot download newer dependencies or the upstream project's own migrated commits, which reviewers will ask about; (3) setup, the image pins JDK 8, JDK 17 and Maven and warms the dependency cache, so nothing is installed by hand. Inspect's `local` sandbox mode exists and was considered; it is not added, because the agentic arm would then run shell commands as the user with network access.
+
+**Docker Desktop settings to add to the guide**: memory at least 8 GB (the image build runs every repo's tests on JDK 8, and each sandbox gets 6 GB from `docker/compose.yaml`); disk at least 40 GB for the image, Maven cache and 16 repos; CPUs 4 or more, since `--max-samples` sandboxes run at 2 CPUs each; Apple Silicon is fine, JDK paths resolve to arm64 at build; no file-sharing or volume configuration is needed because repos are baked into the image; confirm with `docker info` before building.
+
+**Edit to make after leaving plan mode**: in `docs/02-local-run.md`, expand step 0 with a "Why Docker" paragraph and the Docker Desktop settings above, and set `--max-samples` guidance to CPUs divided by 2. Commit to `main` and to the working branch.
+
 ## 7. Verification of this plan
 
 This is a research and writing deliverable, not code. Verification is by reading: each claim in sections 1 to 5 traces to a cited item in Appendices A to D; every item the research agents could not verify is marked in the appendices and carried into section 6. The rewritten prompt's acceptance criteria are the end-to-end test of the eventual work.
