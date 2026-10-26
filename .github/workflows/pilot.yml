@@ -1,0 +1,74 @@
+name: pilot
+
+# Manual runs only. Each job runs one (task, model) pair with Inspect's per-sample
+# cost cap, so a mistake costs at most cost_limit x number of samples. API keys are
+# repository secrets and are exposed only to the eval step.
+on:
+  workflow_dispatch:
+    inputs:
+      task:
+        description: "pilot_single_shot | pilot_agentic | output_ceiling"
+        required: true
+        default: "output_ceiling"
+      model:
+        description: "Inspect model name, e.g. anthropic/claude-fable-5-1"
+        required: true
+      strata:
+        description: "comma-separated strata for pilot tasks (S,M,L,B)"
+        required: false
+        default: "S,M,L"
+      cost_limit:
+        description: "max dollars per sample"
+        required: true
+        default: "5"
+      extra_args:
+        description: "extra inspect eval args, e.g. --max-tokens 1048576 --reasoning-effort high"
+        required: false
+        default: ""
+
+jobs:
+  eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: pip install -e ".[dev]"
+      - name: Unit tests
+        run: pytest
+      - name: Build sandbox image
+        if: ${{ inputs.task != 'output_ceiling' }}
+        run: bash scripts/build_image.sh tasks/pilot.yaml
+      - name: Verify pre-registration hash matches
+        run: bash prereg/hash.sh --check
+      - name: Run eval
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          INSPECT_LOG_DIR: logs
+        run: |
+          set -euo pipefail
+          case "${{ inputs.task }}" in
+            output_ceiling)
+              inspect eval legacybench/probe/ceiling.py --model "${{ inputs.model }}" \
+                --cost-limit "${{ inputs.cost_limit }}" ${{ inputs.extra_args }} ;;
+            pilot_single_shot|pilot_agentic)
+              inspect eval "legacybench/tasks.py@${{ inputs.task }}" --model "${{ inputs.model }}" \
+                -T strata="${{ inputs.strata }}" --cost-limit "${{ inputs.cost_limit }}" ${{ inputs.extra_args }} ;;
+            *) echo "unknown task"; exit 1 ;;
+          esac
+      - name: Ledger
+        if: always()
+        run: python -m legacybench.analysis.report logs --out reports/latest || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: eval-logs-${{ inputs.task }}-${{ github.run_id }}
+          path: |
+            logs/
+            reports/
+          retention-days: 90

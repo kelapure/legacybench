@@ -35,7 +35,7 @@ The prompt asks for a bundle, a run, an aggregate and a write-up. A top evaluati
 
 3. **Decontaminate by date and probe memorization.** Every candidate benchmark except RepoMod-Bench (Feb 2026) and the 2026 modernization benchmarks predates the three models' training. The professional move is a two-tier benchmark: a frozen public split plus a post-cutoff split built from migrations committed after the models' cutoffs (LiveCodeBench, SWE-rebench, K Prize pattern), with the SWE-Bench Illusion file-localization probe and Golchin-Surdeanu guided completion run on every model.
 
-4. **Use execution oracles independent of any LLM, and measure oracle strength.** Test pass rate is only as good as the tests. Report mutation score of each task's test suite (PIT, Stryker, mutmut), coverage-preservation (FreshBrew's <= 5 pp rule to catch test deletion), differential testing against the original system (Diffy pattern, sudo-rs `SUDO_UNDER_TEST` pattern), and byte-identical output for batch programs. Where an LLM judge is unavoidable, use a cross-family judge, swap order, and report Krippendorff's alpha against humans.
+4. **Use execution oracles independent of any LLM, and measure oracle strength.** Test pass rate is only as good as the tests. Report mutation score of each task's test suite (PIT, Stryker, mutmut), coverage-preservation (FreshBrew's 5%-relative rule to catch test deletion), differential testing against the original system (Diffy pattern, sudo-rs `SUDO_UNDER_TEST` pattern), and byte-identical output for batch programs. Where an LLM judge is unavoidable, use a cross-family judge, swap order, and report Krippendorff's alpha against humans.
 
 5. **Hold effort and scaffold constant, and treat both as variables.** "High effort" is the default for Fable 5.1, one notch above default for Argon and Sol, and Fable exposes xhigh and max above it. METR showed scaffold choice flips rankings; HAL found higher effort reduced accuracy in a majority of runs. Run one shared minimal scaffold (Inspect solver) for the headline, plus each vendor's first-party agent as a secondary arm, and report effort sweeps for at least one benchmark.
 
@@ -102,7 +102,7 @@ Define legacy modernization operationally and decompose it into five capabilitie
 
 **Phase 1. Benchmark selection and task validation (gate: validated task manifest with annotations published).**
 Do not inherit any task by citation. Start from this slate and justify every inclusion and exclusion in a selection memo:
-- Capability (c): MigrationBench selected-300 and FreshBrew (Java 8 to 17/21). Keep FreshBrew's coverage-within-5-pp rule and MigrationBench's test-methods-unchanged rule for both.
+- Capability (c): MigrationBench selected-300 and FreshBrew (Java 8 to 17/21). Keep FreshBrew's coverage-within-5%-relative rule and MigrationBench's test-methods-unchanged rule for both.
 - Capability (b): RepoTransBench v2 on a fixed, published, per-pair stratified subset with test suites made read-only and hash-verified; CRUST-Bench (C to safe Rust); RepoMod-Bench with tasks flagged where a target-language port already exists publicly (jq to gojq, httpie to xh, check all 21), weighted by task not by test, run through the neutral scaffold in Phase 2; SWE Refactor Bench if its license and harness check out, adopting its migration-audit stage everywhere.
 - Capability (d): build a characterization-test task set from the same repos: strip tests from a module, ask for tests, score by mutation score of the generated suite against the original implementation (PIT / Stryker / mutmut), require all generated tests to pass on the original.
 - Capability (a) and the legacy-stack gap: build [N, target 30 to 50] COBOL/CICS tasks from AWS CardDemo (Apache-2.0) with batch output datasets as the oracle, plus NIST COBOL85 semantics tests via GnuCOBOL as a translation oracle. If this cannot be done within budget, declare the gap explicitly rather than substituting COBOLEval or MainframeBench.
@@ -164,8 +164,139 @@ Assumptions made in the rewritten prompt, to be confirmed or overridden:
 5. **Budget ceiling and timeline** are unknown; the lean and credible envelopes bracket the decision.
 6. **Independent replicator** is unnamed. Candidates: Vals, Epoch, HAL (Princeton), a university SE group.
 7. **Venue**: NeurIPS Datasets & Benchmarks standard assumed; arXiv plus report is the fallback.
-8. **Model set.** The LinkedIn post compares Argon to GPT-6 Astra; this plan evaluates GPT-6.1 Sol. Add Astra as a fourth model (roughly one third more API spend) or state the substitution in the report. The post's replies were not provided; if they contain objections, they belong in section 0.
+8. **Model set.** Decided 2026-10-26: four models, GPT-6 Astra added as the post's comparator alongside GPT-6.1 Sol. The post's replies were not provided; if they contain objections, they belong in section 0.
 9. **Prices for Argon and Sol** are medium confidence (aggregators, vendor pages unreachable from this sandbox); re-verify before freezing.
+
+## 8. What we need to execute the benchmark
+
+Checked in this container on 2026-10-26: 4 CPUs, 15 GB RAM, Docker binary present but no daemon, no Inspect, no API keys, Anthropic API reachable, Google API host reachable but returns 403 without a key, OpenAI API and Hugging Face unreachable through the egress proxy, GitHub reachable for git but not for raw fetches. This container can write the harness and run unit tests on it. It cannot run the benchmark. A separate execution environment is a hard requirement.
+
+### 8.1 Decisions that gate everything else
+Recorded answers (2026-10-26): budget $200 out of pocket, which supersedes both tiers and is handled in section 9; COBOL gap declared; model set = four, adding GPT-6 Astra; execution environment no preference, section 9 proposes free GitHub Actions on a public repo.
+
+| Decision | Options | Default if undecided |
+|---|---|---|
+| Budget tier | Lean (~$70-100k) or credible (~$170-250k) | Superseded: $200 pilot (section 9); the tiers remain as the funding ask the pilot produces |
+| COBOL axis | Build from CardDemo + NIST suite (one engineer-month, a COBOL SME) or declare the gap | Decided: declare the gap in v0, build in v1 |
+| Headline effort | Each vendor default; "high" for all; max available for all | "high" for all as the headline, defaults and max as a registered sweep on one sub-benchmark |
+| Headline scaffold | Neutral Inspect scaffold, vendor CLIs secondary | Neutral |
+| Model set | Three as named, or add GPT-6 Astra (the post's comparator) | Three; state the substitution |
+| Independent replicator | Vals, Epoch, HAL, university SE group | Approach two before pre-registration |
+| Timing vs price changes | Argon doubles 2026-12-01; Sol promo reportedly ends 2026-11-21 | Budget at post-change prices; scored runs cannot responsibly start before then |
+
+### 8.2 Accounts, access and legal
+- API access with spend caps and known rate limits: Anthropic (Fable 5.1; note the 30-day retention requirement and no zero-data-retention option), Google AI Studio or Vertex (Argon; paid tier only; confirm the long-decode flag and its max output), OpenAI (Sol; confirm max output at high effort and reasoning-token billing). Rate limits for Google and OpenAI were not found and must be confirmed with the vendors; long single-response decodes at 500K tokens will hit per-request and per-minute caps.
+- Frozen price sheet, dated, from the three vendor pages, verified by a person outside this sandbox.
+- Hosting: GitHub org for harness and manifest; Hugging Face org for the task dataset with Croissant metadata; OSF project for pre-registration; container registry (GHCR) for per-task images; Zenodo DOI for the release; object storage (tens of GB of `.eval` logs plus the encrypted trajectory archive).
+- Dataset access and licenses: MigrationBench (Apache-2.0, HF), FreshBrew (Apache-2.0, GitHub), CRUST-Bench (GPL-3.0: fine to run, constrains redistribution of derived test code), RepoTransBench release tarball (MIT, 374 MB), RepoMod-Bench (Apache-2.0 harness, GPL upstream sources cloned at build), SWE Refactor Bench (license unverified, contact authors), AWS CardDemo (Apache-2.0), GnuCOBOL and NIST COBOL85 (GPL compiler, public-domain suite).
+- Legal review: redistribution of GPL-derived task material, vendor terms on publishing benchmark results, contributor agreement for annotators and baseliners, canary string in every task file to detect later training contamination, conflict-of-interest statement for 8090.ai.
+
+### 8.3 Compute and execution environment
+- An orchestration host (8 to 16 vCPU, 32 to 64 GB) running Inspect with API keys injected into the solver only, never into task sandboxes.
+- A Docker-capable worker pool for sandboxes: builds and tests across JDK 8/17/21 with Maven and Gradle, Rust stable, Go, GCC and Clang, GnuCOBOL 3.x, Python, Node. Volume: roughly 800 tasks x 3 models x k=3 x 2 arms, about 14,000 trajectories, each with at least one build-and-test cycle; agentic runs add many cycles. Order-of-magnitude estimate: low thousands of CPU-hours for builds and tests. Mutation testing of generated characterization suites is the expensive part (PIT and Stryker on real Java repos run for hours); cap mutants per task by sampling, run mutation scoring once per output, and run oracle-strength scoring of the original suites once per task.
+- Network policy in sandboxes: none. Dependency resolution (Maven, cargo, npm) must come from pre-baked images or a local mirror, which is itself a build task per repo.
+- Storage: per-task images (hundreds of GB total), logs, encrypted trajectories.
+- A separate, smaller environment for the output-ceiling probe and the pilot, because long decodes tie up rate limits for an hour at a time.
+
+### 8.4 Software to build (the contents of this repo)
+1. Task manifest schema and validator: id, capability, source repo and commit, oracle type, license, input and target token sizes, split (public or post-cutoff), validation status and annotator ratings, oracle mutation score and coverage, known-existing-port flag.
+2. Inspect tasks: dataset loaders and scorers wrapping each benchmark's native verifier (MigrationBench, FreshBrew, CRUST-Bench, RepoTransBench, RepoMod-Bench, SWE Refactor Bench), with read-only test enforcement by hash, coverage-preservation and test-methods-unchanged gates applied uniformly.
+3. Solvers: single-response arm (whole repository out as files in one response, with a file-block parser); shared minimal agentic scaffold (shell, file edit, test run, context management per METR guidelines); optional vendor-CLI adapters (Claude Code, Gemini CLI, Codex CLI) for the secondary arm.
+4. Output-ceiling probe: known-length checkable generation per model, recording truncation point, finish reason, thinking accounting, decode speed, flags required.
+5. Oracle-strength tooling: mutation runners per language (PIT, Stryker, mutmut, cargo-mutants), coverage diff, differential runner against the original binary (Diffy-style with a secondary instance), cross-file consistency analyzer from compiler diagnostics.
+6. Cost and latency ledger: tokens to dollars via the frozen price sheet; latency decomposition into model, queue or rate-limit, tool execution.
+7. Annotation tooling: SWE-bench Verified rubric forms, three-annotator assignment, Krippendorff's alpha with CIs, errata file.
+8. Fresh-split miner: find and package human migration commits after each model's cutoff, with the date-based split logic.
+9. COBOL task builder from CardDemo (if the axis is built): batch job scenarios, output-dataset oracle, NIST-suite translation checks.
+10. Statistics pipeline: Miller clustered and paired estimators, Wilson and Beta-Binomial intervals, pass@k and pass^k, rliable IQM and performance profiles, baycomp with ROPE, Holm, MCB confidence set, BCa cost bootstrap, Pareto plots; pre-registration document template and hashing script.
+11. Failure-taxonomy labelling schema (Pan et al. 15 categories extended) and tooling.
+12. Report generators for the technical report and the plain-language report; datasheet, Croissant metadata, license files, canary insertion, release script.
+
+### 8.5 People
+- Integrator and owner of the manifest and the registered plan (one person; no one else may change a registered parameter).
+- Benchmark engineers for harness, adapters and images: one to two, or Claude Code sessions supervised by one engineer.
+- Task annotators: three independent engineers covering Java, Python, Rust and C; for the COBOL axis, mainframe engineers, who are scarce and expensive.
+- Human baseliners: qualified engineers for the 30-task sample, paid for time including failed attempts.
+- Statistician reviewer: one, external preferred, signs off on the pre-registration.
+- COBOL subject-matter expert: one, if the axis is built.
+- External reviewers: at least two from frontier-lab evaluation teams or component-benchmark authors.
+- Independent replicator organization.
+- Legal: license and vendor-terms review.
+
+### 8.6 Timeline (credible tier; lean tier roughly 60%)
+| Phase | Duration | Long pole |
+|---|---|---|
+| 0 Construct memo | 1 week | two practitioner reviews |
+| 1 Selection and validation | 5 to 6 weeks | three-annotator pass over ~800 tasks; COBOL build runs in parallel at 6 to 8 weeks |
+| 2 Harness and images | 3 to 4 weeks, parallel with 1 | dependency mirrors for no-network sandboxes |
+| 3 Pilot and ceiling probe | 1 week | rate limits on long decodes |
+| 4 Pre-registration | 1 week | statistician sign-off |
+| 5 Scored runs | 2 to 3 weeks | rate limits, k=3, two arms |
+| 6 to 7 Analysis, taxonomy, baselines | 3 weeks | two-labeller taxonomy pass |
+| 8 External review and replication | 4 weeks | replicator availability |
+| 9 Release and reports | 2 to 3 weeks | plain-language read-back |
+| Total | about 4.5 to 5 months | |
+
+### 8.7 What this session can do next, once decisions are made
+Scaffold the repository for Phases 0 to 4: manifest schema and validator, Inspect task skeletons for the kept benchmarks, the single-response and agentic solvers, the output-ceiling probe, the cost ledger, the annotation rubric and alpha computation, the pre-registration template with hashing, and a requirements document listing the accounts and environment above. All of it can be unit-tested here without API keys; nothing scored can run here.
+
+## 9. The $200 version: a pre-registered pilot, not a benchmark
+
+Decisions recorded 2026-10-26: budget $200 out of pocket (API plus compute; labor is the user and Claude), COBOL declared a gap, four models (Fable 5.1, Gemini 4 Argon, GPT-6.1 Sol, GPT-6 Astra), execution environment undecided.
+
+**What $200 buys.** A frontier agentic repo task costs roughly $2 to $5 on Fable 5.1 (input $10 per M, mostly cached at $0.25, output $50 per M) and $0.50 to $1.50 on the $2 / $10 models. The whole budget is about 150 to 200 trajectories across four models with k = 1. Fifty tasks per model at k = 1 detects only 25 to 30 point gaps. So the honest product is a pilot with four deliverables, each of which stands on its own:
+
+1. **Measured output ceilings per model.** The LinkedIn post's Claim A is checkable with one call per model. This is the cheapest real finding in the whole program and the only one n = 1 or 2 can support.
+2. **A working, released harness** with per-sample cost caps, that a funded study can run unchanged.
+3. **Measured per-task cost, time and score variance**, which turns the power table in Appendix C from assumptions into a budget request with a defensible number.
+4. **A descriptive first look at H1** (single-shot versus agentic) on a handful of size-stratified tasks, labelled exploratory.
+
+**What it cannot claim.** Any model ranking. Any confirmed or refuted hypothesis. Any statement about COBOL. Inter-annotator reliability (one annotator). Contamination status (public tasks only; the fresh-split miner is deferred). The plain-language report says so in its first paragraph.
+
+**Budget allocation (k = 1, prices as of today, retry reserve included)**
+| Item | Design | Est. cost |
+|---|---|---|
+| Output-ceiling probe | One known-length checkable generation per model at registered effort with thinking on; one retry if it truncates below the documented cap. Worst case Argon 1M output = $10, Fable 128K = $6.40, Sol and Astra 128K = $1.30 each | ~$25 |
+| Single-shot arm | 6 MigrationBench or FreshBrew tasks in three size strata (about 20K, 60K, 150K+ target tokens), whole repository out in one response, all four models. Fable ~$2 to $9 per task, others ~$0.40 to $2 | ~$55 |
+| Agentic arm | Same 6 tasks, shared minimal Inspect scaffold, hard per-sample cost cap ($5 Fable, $1.50 others) | ~$55 |
+| Breadth sample | 10 further MigrationBench minimal tasks, agentic arm, three models (Astra omitted here to fit), for variance and cost estimation | ~$35 |
+| Reserve | Retries, harness mistakes, a second probe run | ~$30 |
+| Total | | ~$200 |
+
+Compute at $0: a public GitHub repository gets free GitHub Actions minutes on 4-vCPU, 16 GB runners with Docker, a 6-hour job limit and 20 concurrent jobs, which fits one-hour long decodes and Maven builds. API keys live in repository secrets and are exposed only to the solver step. Logs upload as workflow artifacts. Alternative: a laptop with Docker. Either way the execution environment costs nothing, which is what makes $200 feasible.
+
+Where the pilot cuts corners the full study must not: single annotator; k = 1; public-split tasks only; two of the kept benchmarks (RepoTransBench, RepoMod-Bench) and all of CRUST-Bench and SWE Refactor Bench deferred; no human baselines; no external replication (though the harness release makes one possible for anyone with their own $200).
+
+**Pre-registration still applies.** Before the first scored call: the probe protocol, the six task ids and their strata, the per-sample caps, the effort setting per model, the single-shot output format, the scorer gates, and the statement that all comparisons are descriptive. Hashed in a git tag. It costs nothing and is what distinguishes a pilot from a demo.
+
+## 10. Implementation plan: scaffold the repository for the pilot
+
+Everything below is buildable and unit-testable in this container without API keys or Docker. Nothing scored runs here.
+
+**Files to create**
+- `README.md`: replace with status, the $200 pilot framing, how to run, what it does not claim.
+- `docs/00-benchmark-design-brief.md`: sync sections 8 to 10 from this plan into the committed brief.
+- `docs/01-pilot-protocol.md`: the pilot protocol above as the pre-registration source document, with placeholders for measured values.
+- `pyproject.toml`: package `legacybench`, dependencies `inspect-ai`, `pydantic`, `pyyaml`, `numpy`, `scipy`; dev `pytest`.
+- `legacybench/manifest.py` and `tasks/pilot.yaml`: pydantic manifest schema (id, capability, source repo and commit, benchmark of origin, oracle type, license, size stratum, split, validation status, existing-port flag) and the pilot task list with six single-shot tasks and ten breadth tasks selected from MigrationBench minimal by repo size.
+- `legacybench/prices.yaml` and `legacybench/ledger.py`: dated frozen price sheet for the four models (input, cached input, output, thinking-billed-as-output flag) and a function from an Inspect `.eval` log to per-sample dollars, tokens and latency decomposition.
+- `legacybench/probe/ceiling.py`: Inspect task that asks each model for a known-length checkable artifact (N numbered, independently compilable Python functions with a deterministic property), scores count achieved, finish reason, thinking token count, decode tokens per second, and truncation point.
+- `legacybench/solvers/single_shot.py`: one-response solver with a fenced multi-file block format and parser that writes files into the sandbox, plus a truncation detector.
+- `legacybench/solvers/agentic.py`: Inspect `basic_agent` with bash and file-edit tools, token, message, time and cost limits read from the manifest.
+- `legacybench/scorers/migrationbench.py`: sandbox scorer running the MigrationBench gates in order: builds on JDK 17, original tests pass, test methods unchanged (hash of test sources), test count non-decreasing, class-file major version check, plus the FreshBrew coverage-drop gate when JaCoCo output exists; returns per-gate booleans so failures are attributable.
+- `legacybench/analysis/power.py`: the Appendix C power formula and inverse (minimum detectable effect) as functions; `legacybench/analysis/estimators.py`: paired difference with SE, Wilson interval, clustered SE, task-level bootstrap; `legacybench/analysis/report.py`: tables from a directory of `.eval` logs.
+- `docker/java-migration.Dockerfile`: JDK 8, 17 and 21 with Maven, offline-mirror hook, no network at run time.
+- `.github/workflows/pilot.yml`: matrix over model and arm, secrets injected only into the Inspect step, `.eval` logs uploaded as artifacts, per-job cost cap enforced through Inspect flags.
+- `prereg/PREREG.md` and `prereg/hash.sh`: the registration document and a script that prints the SHA-256 and creates the tag.
+- `tests/`: unit tests for the manifest schema, the multi-file block parser, the ledger arithmetic against the price sheet, the power formula against the Appendix C table values, and the scorer's gate logic with fixture directories.
+
+**Reuse**: MigrationBench's published gate definitions and its Docker evaluation mode; FreshBrew's coverage rule; Inspect's `basic_agent`, sandbox and limit flags; rliable, baycomp and evalci for later stages (not needed in the scaffold).
+
+**Verification**
+1. `pytest` passes here: parser round-trips a multi-file fixture; ledger reproduces hand-computed dollars for sample token counts; power function reproduces 1,309 / 328 / 146 tasks for k = 1 in the Appendix C main scenario; manifest rejects a task missing its stratum.
+2. `inspect eval legacybench/probe/ceiling.py --model mockllm/model` runs end to end against Inspect's mock model with no keys.
+3. The workflow file validates with `actionlint` if available, otherwise by dry inspection.
+4. Nothing in the repo contains an API key; `prices.yaml` carries its date; the README's first paragraph states the pilot's non-claims.
 
 ## 7. Verification of this plan
 
@@ -186,7 +317,7 @@ This is a research and writing deliverable, not code. Verification is by reading
 | Benchmark | Construct | Oracle | SOTA | Fit |
 |---|---|---|---|---|
 | MigrationBench (Amazon, May 2025, Apache-2.0; github.com/amazon-science/MigrationBench) | Java 8 to 17/21 repo migration; 5,102 full, 300 selected, 4,814 UTG | Build + original tests pass + class-file version + test methods unchanged + test count non-decreasing; maximal variant also requires deps at latest major | 62.3% minimal / 27.3% maximal (SD-Feedback, Claude 3.5); 71.7 / 53.3 with Strands + Sonnet 4.5 | Direct; accepts a diff or migrated dir from any agent |
-| FreshBrew (Google et al., Oct 2025, NeurIPS 2025, Apache-2.0; github.com/mrcabbage972/freshbrew) | 228 repos that build on JDK 8 and fail on 17/21 | Compile + all original tests + coverage within 5 pp | Gemini 2.5 Flash 52.3% (v1), 56.5% (2026 revision) | Direct; coverage guard worth borrowing |
+| FreshBrew (Google et al., Oct 2025, NeurIPS 2025, Apache-2.0; github.com/mrcabbage972/freshbrew) | 228 repos that build on JDK 8 and fail on 17/21 | Compile + all original tests + coverage within 5% relative | Gemini 2.5 Flash 52.3% (v1), 56.5% (2026 revision) | Direct; coverage guard worth borrowing |
 | CRUST-Bench (UT Austin / NYU, Apr 2025, COLM 2025, GPL-3.0) | 100 C repos to safe Rust against hand-written Rust interfaces and tests | Manual interfaces + tests | o3 19/100 single-shot | Direct, hard, unsaturated; no Docker, dormant since Apr 2025 |
 | SWE Refactor Bench (Aug 2026, arXiv 2608.23564; license unverified) | 20 whole-repo stack migrations, 4 debt types | Migration audit + fixed behavioural tests + 6 independent verifier agents | 28/520 runs pass all three; best 47/100 | Direct and current; the audit stage catches "copy the old code and pass" |
 | TransRepo-bench (Microsoft, Jan 2025) | 13 Java to C# repos, skeleton-guided | Fixed unit tests | not found | Direct, tiny, single pair |
@@ -277,7 +408,7 @@ Sandbox egress allowed direct fetches only to Anthropic domains; everything else
 - Pan et al. "Lost in Translation", ICSE 2024, arXiv 2308.03109: correct translations 2.1 to 47.3%; 1,748 failures labelled into a 15-category bug taxonomy (syntactic, semantic/data-type, API mismatch, I/O, dependency, ...). Artifact github.com/Intelligent-CAT-Lab/PLTranslationEmpirical.
 - DARPA TRACTOR: MIT Lincoln Lab independent T&E; C batteries every 6 months; scores functional correctness, safety (unsafe usage), idiomaticity, performance. arXiv 2609.25121.
 - SWE Refactor Bench, arXiv 2608.23564 (Aug 2026): 20 whole-repo stack migrations; 3-stage scoring (migration audit, fixed behavioural tests, 6 independent agents hunting hidden behavioural diffs). 28/520 runs (5.4%) pass all three; best 47.0/100 (Claude Opus 5, Claude Code xhigh); language rewrites 5.6 vs build-toolchain rewrites 31.4.
-- FreshBrew, arXiv 2510.04852: 228 Java repos to JDK 17/21; success = compiles + original tests pass unmodified + line coverage drop <= 5 pp; best 52.3%.
+- FreshBrew, arXiv 2510.04852: 228 Java repos to JDK 17/21; success = compiles + original tests pass unmodified + relative line-coverage drop no worse than 5%; best 52.3%.
 - MigrationBench, Amazon, arXiv 2505.09569: 5,102 Java 8 Maven repos (MIT/Apache); minimal vs maximal migration; Claude 4.5 Sonnet agent 71.67% / 53.33%. HF: AmazonScience/migration-bench-java-full.
 - Factory Legacy-Bench (Apr 2026): hundreds of tasks (COBOL ~46%, Java 7 ~32%, BASIC/C89/Fortran/Assembly ~5-6% each), hidden tests, Harbor-compatible; top 42.5%; 31 of 44 unsolved are COBOL. Vendor-run. docs.factory.ai/benchmarks/legacy-bench
 - RepoMod-Bench (Modelcode.ai), arXiv 2602.22518 (Feb 2026): 21 repos, 8 languages, 1.6M LOC, 11,616 hidden implementation-agnostic tests; pass rate 91.3% (<10K LOC) to 15.3% (>50K LOC).

@@ -1,0 +1,64 @@
+# Frozen price sheet. Dollars are a pure function of tokens and this file.
+# Re-verify every entry on the vendor's own pricing page before the pre-registration
+# hash is taken; the confidence field says how each entry was obtained on 2026-10-26.
+as_of: 2026-10-26
+currency: USD
+unit: per_million_tokens
+notes:
+  - Output prices include reasoning/thinking tokens for all vendors listed (billed as output).
+  - Inspect's ModelUsage.output_tokens already includes reasoning tokens; do not add
+    reasoning_tokens again when computing cost.
+  - input_tokens in Inspect excludes cached tokens; cache reads and writes are billed
+    at their own rates below.
+models:
+  anthropic/claude-fable-5-1:
+    vendor: Anthropic
+    confidence: verified_vendor_page   # platform.claude.com/docs/en/about-claude/pricing
+    input: 10.0
+    output: 50.0
+    input_cache_read: 0.25
+    input_cache_write: 12.5            # 5-minute cache write; 1-hour write is 20.0
+    max_output_tokens_documented: 128000
+    effort_default: high
+    effort_levels: [low, medium, high, xhigh, max]
+  google/gemini-4-argon:
+    vendor: Google
+    confidence: aggregators_vendor_page_unreachable
+    input: 2.0
+    output: 10.0
+    input_cache_read: 0.10             # implicit caching only; explicit caching unsupported
+    input_cache_write: 0.0
+    scheduled_change:
+      effective: 2026-12-01
+      input: 4.0
+      output: 20.0
+      input_cache_read: 0.20
+    max_output_tokens_documented: 65536
+    long_decode_documented: 1048576    # one API probe returned 32768; measure, do not trust
+    effort_default: medium
+    effort_levels: [low, medium, high]
+  openai/gpt-6.1-sol:
+    vendor: OpenAI
+    confidence: aggregators_vendor_page_unreachable
+    input: 2.0
+    output: 10.0
+    input_cache_read: 0.10
+    input_cache_write: 0.0
+    long_context:
+      threshold_input_tokens: 272000
+      input: 4.0
+      output: 15.0
+    max_output_tokens_documented: 128000
+    effort_default: medium
+    effort_levels: [low, medium, high, xhigh, max]
+    promo_note: pricing reportedly promotional through 2026-11-21 (unconfirmed)
+  openai/gpt-6-astra:
+    vendor: OpenAI
+    confidence: UNVERIFIED_FILL_BEFORE_FREEZE
+    input: null
+    output: null
+    input_cache_read: null
+    input_cache_write: null
+    max_output_tokens_documented: 128000   # per the LinkedIn post; unverified
+    effort_default: null
+    effort_levels: []

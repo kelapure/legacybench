@@ -1,0 +1,616 @@
+version: pilot-v0
+created: '2026-10-26'
+source_dataset: FreshBrew data/migration_datasets/full_dataset.yaml + cov_data.csv
+selection_rule: Single-module Java 8 Maven repos with >= 10 tests run; two per size
+  stratum (S/M/L by LOC, est_output_tokens = LOC x 10) for the single-shot and agentic
+  arms; ten small-to-medium repos (B) for the agentic breadth sample.
+default_limits:
+  single_shot:
+    cost_usd: 9.0
+    tokens: 1500000
+    messages: 4
+    time_s: 5400
+  agentic:
+    cost_usd: 5.0
+    tokens: 2000000
+    messages: 120
+    time_s: 3600
+tasks:
+- id: freshbrew/AdRoll__cantor
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: AdRoll/cantor
+  commit: 76b4e1b4fcca28e57e3a23cb6ea61fb428275442
+  license: MIT
+  commit_date: '2014-11-24'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 1153
+    java_files: 3
+    est_output_tokens: 11530
+  stratum: S
+  split: public
+  baseline:
+    tests_run: 13
+    cov_line_percent: 75.51622418879056
+    cov_line_total: 1695
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - single_shot
+  - agentic
+- id: freshbrew/JakeWharton__DiskLruCache
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: JakeWharton/DiskLruCache
+  commit: 3e016356cfc7e5f9644a7a732fe0223e9742e024
+  license: Apache-2.0
+  commit_date: '2016-06-01'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 1216
+    java_files: 3
+    est_output_tokens: 12160
+  stratum: S
+  split: public
+  baseline:
+    tests_run: 61
+    cov_line_percent: 86.8478737395879
+    cov_line_total: 2281
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - single_shot
+  - agentic
+- id: freshbrew/vincentrussell__sql-to-mongo-db-query-converter
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: vincentrussell/sql-to-mongo-db-query-converter
+  commit: 508ce33c91ef89c37773ef2cb3c7d126901c2036
+  license: Apache-2.0
+  commit_date: '2024-04-10'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 5046
+    java_files: 27
+    est_output_tokens: 50460
+  stratum: M
+  split: public
+  baseline:
+    tests_run: 237
+    cov_line_percent: 77.31686721553726
+    cov_line_total: 9474
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - single_shot
+  - agentic
+- id: freshbrew/square__javapoet
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: square/javapoet
+  commit: b9017a9503b76e11b4ad4c1a9f050e2d29112cb0
+  license: Apache-2.0
+  commit_date: '2024-10-10'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 5107
+    java_files: 17
+    est_output_tokens: 51070
+  stratum: M
+  split: public
+  baseline:
+    tests_run: 389
+    cov_line_percent: 94.0156441428706
+    cov_line_total: 10611
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - single_shot
+  - agentic
+- id: freshbrew/perwendel__spark
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: perwendel/spark
+  commit: 1973e402f5d4c1442ad34a1d38ed0758079f7773
+  license: Apache-2.0
+  commit_date: '2022-07-10'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 13947
+    java_files: 100
+    est_output_tokens: 139470
+  stratum: L
+  split: public
+  baseline:
+    tests_run: 318
+    cov_line_percent: 69.30005146680391
+    cov_line_total: 15544
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - single_shot
+  - agentic
+- id: freshbrew/julienchastang__charts4j
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: julienchastang/charts4j
+  commit: 08201256063f8de7c19d5cc18dab112c7b9953b7
+  license: MIT
+  commit_date: '2020-10-19'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 15076
+    java_files: 109
+    est_output_tokens: 150760
+  stratum: L
+  split: public
+  baseline:
+    tests_run: 192
+    cov_line_percent: 84.10351201478743
+    cov_line_total: 14066
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - single_shot
+  - agentic
+- id: freshbrew/NetherlandsForensicInstitute__kafka-spout
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: NetherlandsForensicInstitute/kafka-spout
+  commit: 02d4862c15985a26a21279d5ed1e3ab7279ff072
+  license: Apache-2.0
+  commit_date: '2021-01-08'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 1016
+    java_files: 7
+    est_output_tokens: 10160
+  stratum: B
+  split: public
+  baseline:
+    tests_run: 51
+    cov_line_percent: 94.8210922787194
+    cov_line_total: 1062
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - agentic
+- id: freshbrew/Netflix__Surus
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: Netflix/Surus
+  commit: 05659af43697f6dae5743fd0a1931c210757e1e7
+  license: Apache-2.0
+  commit_date: '2018-01-17'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 1027
+    java_files: 5
+    est_output_tokens: 10270
+  stratum: B
+  split: public
+  baseline:
+    tests_run: 10
+    cov_line_percent: 78.81882770870338
+    cov_line_total: 2252
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - agentic
+- id: freshbrew/vbauer__caesar
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: vbauer/caesar
+  commit: bc5f07c0d3fd5e40167ab72b36206b218555f734
+  license: Apache-2.0
+  commit_date: '2018-11-12'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 1042
+    java_files: 33
+    est_output_tokens: 10420
+  stratum: B
+  split: public
+  baseline:
+    tests_run: 53
+    cov_line_percent: 98.3974358974359
+    cov_line_total: 936
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - agentic
+- id: freshbrew/jamesmorgan__ReloadablePropertiesAnnotation
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: jamesmorgan/ReloadablePropertiesAnnotation
+  commit: abd54e87d94293044c84bf71a2bda573b2f742c5
+  license: MIT
+  commit_date: '2017-04-18'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 1087
+    java_files: 14
+    est_output_tokens: 10870
+  stratum: B
+  split: public
+  baseline:
+    tests_run: 41
+    cov_line_percent: 85.64867967853043
+    cov_line_total: 1742
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - agentic
+- id: freshbrew/jirutka__rsql-parser
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: jirutka/rsql-parser
+  commit: 344f9659eb432dd7b9202501ba22a8a2efe64750
+  license: MIT
+  commit_date: '2025-03-13'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 1141
+    java_files: 17
+    est_output_tokens: 11410
+  stratum: B
+  split: public
+  baseline:
+    tests_run: 129
+    cov_line_percent: 67.1126198083067
+    cov_line_total: 5008
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - agentic
+- id: freshbrew/mongobee__mongobee
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: mongobee/mongobee
+  commit: 4e1ec5e381121fc9e5ad54881c84029114bafa52
+  license: Apache-2.0
+  commit_date: '2018-03-23'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 1241
+    java_files: 16
+    est_output_tokens: 12410
+  stratum: B
+  split: public
+  baseline:
+    tests_run: 41
+    cov_line_percent: 75.4970445996776
+    cov_line_total: 1861
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - agentic
+- id: freshbrew/awslabs__dynamodb-streams-kinesis-adapter
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: awslabs/dynamodb-streams-kinesis-adapter
+  commit: 385052f634a8ba44e37d3ad57ea48c317ec41797
+  license: Apache-2.0
+  commit_date: '2024-10-07'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 4702
+    java_files: 28
+    est_output_tokens: 47020
+  stratum: B
+  split: public
+  baseline:
+    tests_run: 384
+    cov_line_percent: 51.6241193155824
+    cov_line_total: 10929
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - agentic
+- id: freshbrew/alibaba__spring-context-support
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: alibaba/spring-context-support
+  commit: 184df1c8cd0b4c11e0c582039eddb308e8ef1761
+  license: Apache-2.0
+  commit_date: '2022-01-03'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 4741
+    java_files: 27
+    est_output_tokens: 47410
+  stratum: B
+  split: public
+  baseline:
+    tests_run: 49
+    cov_line_percent: 86.76211021768975
+    cov_line_total: 5099
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - agentic
+- id: freshbrew/rkapsi__patricia-trie
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: rkapsi/patricia-trie
+  commit: 350da0813dfabb3a41b8bc0c9cd2fd01f954c0d2
+  license: Apache-2.0
+  commit_date: '2014-07-13'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 4767
+    java_files: 18
+    est_output_tokens: 47670
+  stratum: B
+  split: public
+  baseline:
+    tests_run: 17
+    cov_line_percent: 56.556390977443606
+    cov_line_total: 6650
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - agentic
+- id: freshbrew/HiveRunner__HiveRunner
+  capability: upgrade_in_place
+  benchmark_of_origin: FreshBrew (arXiv 2510.04852) with MigrationBench gates (arXiv
+    2505.09569)
+  repo: HiveRunner/HiveRunner
+  commit: 0be34c87c421b910fa2021df5ccd2a785d10c18c
+  license: Apache-2.0
+  commit_date: '2024-11-28'
+  source_java: 8
+  target_java: 17
+  size:
+    loc: 5319
+    java_files: 58
+    est_output_tokens: 53190
+  stratum: B
+  split: public
+  baseline:
+    tests_run: 298
+    cov_line_percent: 87.86039453717754
+    cov_line_total: 6590
+  oracle:
+    type: executable_tests
+    required_gates:
+    - build
+    - tests_pass
+    - test_files_unchanged
+    - test_count_non_decreasing
+    - class_major_version
+    - coverage_guard
+    coverage_floor_relative: -0.05
+  validation:
+    status: unvalidated
+    annotators: 0
+    notes: ''
+  existing_port_known: false
+  arms:
+  - agentic
