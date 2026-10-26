@@ -33,7 +33,8 @@ pip install -e ".[dev]"
 pytest
 ```
 
-Smoke-test the probe against Inspect's mock model:
+Smoke-test the probe against Inspect's mock model (needs one-time network access so
+tiktoken can download its encoding file; set `TIKTOKEN_CACHE_DIR` to reuse it offline):
 
 ```bash
 inspect eval legacybench/probe/ceiling.py --model mockllm/model -T lengths=5

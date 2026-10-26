@@ -8,3 +8,4 @@ reports/
 docker/repos/
 .env
 .venv/
+.pytest_cache/
