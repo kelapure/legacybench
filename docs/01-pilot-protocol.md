@@ -83,9 +83,9 @@ entry is blank and the ledger refuses to run a model without a complete entry.
 1. Fill and re-verify `prices.yaml` on the vendor pages. Decide effort settings.
 2. Freeze: `bash prereg/hash.sh`. Push the tag.
 3. Probe each model. Record measured caps in the report, not in the registration.
-4. Build the sandbox image. Confirm every manifest repo builds and passes tests on
-   JDK 8 inside it; a repo that does not is removed and the removal is logged as a
-   deviation.
+4. Build the sandbox image and run `scripts/verify_image.py`. Every manifest repo must
+   build and pass its tests on JDK 8 inside the image; a repo that does not is removed
+   and the removal is logged as a deviation.
 5. Run the single-shot arm, then the agentic arm, one model at a time, interleaving
    models by day where possible.
 6. Produce the ledger and descriptive report.
